@@ -93,4 +93,58 @@ describe("NFTMarketplace", () => {
             ).to.be.revertedWith("Price must be greater than zero");
         });
     });
+
+    describe("Purchasing marketplace items", () => {
+        let price = 2;
+        beforeEach(async () => {
+            // addr1 mints and NFT
+            await nft.connect(addr1).mint(URI);
+            // addr1 approves marketplace to spend NFT
+            await nft.connect(addr1).setApprovalForAll(marketplace.address, true);
+            // addr1 makes their NFT a marketplace item
+            await marketplace.connect(addr1).makeItem(nft.address, 1, toWei(price));
+        });
+
+        it("Should update item as sold, pay seller, transfer NFT to buyer, charge fees and emit bought event", async () => {
+            const sellerInitialEthBal = await addr1.getBalance();
+            const feeAccountInitialEthBal = await deployer.getBalance();
+
+            // Fetch items total price (market fees + item price)
+            let totalPriceInWei = await marketplace.getTotalPrice(1);
+
+            // addr2 purchases item
+            await expect(marketplace.connect(addr2).purchaseItem(1, { value: totalPriceInWei }))
+                .to.emit(marketplace, "Bought")
+                .withArgs(
+                    1,
+                    nft.address,
+                    1,
+                    toWei(price),
+                    addr1.address,
+                    addr2.address
+                );
+
+            const sellerFinalEthBal = await addr1.getBalance();
+            const feeAccountFinalEthBal = await deployer.getBalance();
+            
+            // Seller should receive payment for the price of the NFT sold
+            console.log({ feeAccountFinal: fromWei(feeAccountFinalEthBal), feeAccountInitialPlusPrice: price + fromWei(feeAccountInitialEthBal) });
+            console.log({ sellerFinal: fromWei(sellerFinalEthBal), sellerInitialPlusPrice: price + fromWei(sellerInitialEthBal) });
+            expect(fromWei(sellerFinalEthBal)).to.equal(price + fromWei(sellerInitialEthBal));
+
+
+            // Calculate fee
+            const fee = (feePercent / 100) * price;
+
+            // feeAccount should receive fee
+            console.log({ final: fromWei(feeAccountFinalEthBal), initialPPlusPrice: fee + fromWei(feeAccountInitialEthBal) });
+            expect(fromWei(feeAccountFinalEthBal)).to.equal(fee + fromWei(feeAccountInitialEthBal));
+
+            // The buyer should now own the NFT
+            expect(await nft.ownerOf(1).to.equal(addr2.address));
+
+            // Item should be marked as sold
+            expect((await marketplace.items(1)).sold).to.equal(true);
+        });
+    });
 });
