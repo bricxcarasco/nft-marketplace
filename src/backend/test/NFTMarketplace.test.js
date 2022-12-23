@@ -109,6 +109,9 @@ describe("NFTMarketplace", () => {
             const sellerInitialEthBal = await addr1.getBalance();
             const feeAccountInitialEthBal = await deployer.getBalance();
 
+            // console.log('sellerInitial', fromWei(sellerInitialEthBal));
+            // console.log('feeAccountInitial', fromWei(feeAccountInitialEthBal));
+
             // Fetch items total price (market fees + item price)
             let totalPriceInWei = await marketplace.getTotalPrice(1);
 
@@ -128,20 +131,17 @@ describe("NFTMarketplace", () => {
             const feeAccountFinalEthBal = await deployer.getBalance();
             
             // Seller should receive payment for the price of the NFT sold
-            console.log({ feeAccountFinal: fromWei(feeAccountFinalEthBal), feeAccountInitialPlusPrice: price + fromWei(feeAccountInitialEthBal) });
-            console.log({ sellerFinal: fromWei(sellerFinalEthBal), sellerInitialPlusPrice: price + fromWei(sellerInitialEthBal) });
-            expect(fromWei(sellerFinalEthBal)).to.equal(price + fromWei(sellerInitialEthBal));
-
+            expect(+fromWei(sellerFinalEthBal)).to.equal(+fromWei(sellerInitialEthBal) + price);
 
             // Calculate fee
             const fee = (feePercent / 100) * price;
 
             // feeAccount should receive fee
-            console.log({ final: fromWei(feeAccountFinalEthBal), initialPPlusPrice: fee + fromWei(feeAccountInitialEthBal) });
-            expect(fromWei(feeAccountFinalEthBal)).to.equal(fee + fromWei(feeAccountInitialEthBal));
+            // console.log({ final: fromWei(feeAccountFinalEthBal), initialPPlusPrice: fee + fromWei(feeAccountInitialEthBal) });
+            expect(+fromWei(feeAccountFinalEthBal)).to.equal(+fromWei(feeAccountInitialEthBal) + fee);
 
             // The buyer should now own the NFT
-            expect(await nft.ownerOf(1).to.equal(addr2.address));
+            expect(await nft.ownerOf(1)).to.equal(addr2.address);
 
             // Item should be marked as sold
             expect((await marketplace.items(1)).sold).to.equal(true);
