@@ -109,9 +109,6 @@ describe("NFTMarketplace", () => {
             const sellerInitialEthBal = await addr1.getBalance();
             const feeAccountInitialEthBal = await deployer.getBalance();
 
-            // console.log('sellerInitial', fromWei(sellerInitialEthBal));
-            // console.log('feeAccountInitial', fromWei(feeAccountInitialEthBal));
-
             // Fetch items total price (market fees + item price)
             let totalPriceInWei = await marketplace.getTotalPrice(1);
 
@@ -137,7 +134,6 @@ describe("NFTMarketplace", () => {
             const fee = (feePercent / 100) * price;
 
             // feeAccount should receive fee
-            // console.log({ final: fromWei(feeAccountFinalEthBal), initialPPlusPrice: fee + fromWei(feeAccountInitialEthBal) });
             expect(+fromWei(feeAccountFinalEthBal)).to.equal(+fromWei(feeAccountInitialEthBal) + fee);
 
             // The buyer should now own the NFT
@@ -145,6 +141,17 @@ describe("NFTMarketplace", () => {
 
             // Item should be marked as sold
             expect((await marketplace.items(1)).sold).to.equal(true);
+        });
+
+        it("Should fail for invalid item ID's, sold items and when not enough ether is paid", async () => {
+            // Fails for invalid item ID's
+            await expect(
+                marketplace.connect(addr2).purchaseItem(2, { value: totalPriceInWei })
+            ).to.be.revertedWith("item doesn't exist");
+
+            await expect(
+                marketplace.connect(addr2).purchaseItem(0, { value: totalPriceInWei })
+            ).to.be.revertedWith("item doesn't exist");
         });
     });
 });
