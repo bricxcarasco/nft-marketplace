@@ -78,15 +78,15 @@ contract Marketplace is ReentrancyGuard {
         uint _totalPrice = getTotalPrice(_itemId);
         Item storage item = items[_itemId];
 
-        require(_itemId > 0 && _itemId <= itemCount, "Item doesn't exist");
-        require(msg.value >= _totalPrice, "Not enough ether to cover item price and market fee");
-        require(!item.sold, "Item already sold");
+        require(_itemId > 0 && _itemId <= itemCount, "item doesn't exist");
+        require(msg.value >= _totalPrice, "not enough ether to cover item price and market fee");
+        require(!item.sold, "item already sold");
 
         // Pay seller and feeAccount
         item.seller.transfer(item.price);
         feeAccount.transfer(_totalPrice - item.price);
 
-        // Uppdate item to sold
+        // Update item to sold
         item.sold = true;
 
         // Transfer NFT to buyer

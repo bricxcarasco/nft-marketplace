@@ -96,6 +96,7 @@ describe("NFTMarketplace", () => {
 
     describe("Purchasing marketplace items", () => {
         let price = 2;
+        let totalPriceInWei;
         beforeEach(async () => {
             // addr1 mints and NFT
             await nft.connect(addr1).mint(URI);
@@ -110,7 +111,7 @@ describe("NFTMarketplace", () => {
             const feeAccountInitialEthBal = await deployer.getBalance();
 
             // Fetch items total price (market fees + item price)
-            let totalPriceInWei = await marketplace.getTotalPrice(1);
+            totalPriceInWei = await marketplace.getTotalPrice(1);
 
             // addr2 purchases item
             await expect(marketplace.connect(addr2).purchaseItem(1, { value: totalPriceInWei }))
@@ -152,6 +153,19 @@ describe("NFTMarketplace", () => {
             await expect(
                 marketplace.connect(addr2).purchaseItem(0, { value: totalPriceInWei })
             ).to.be.revertedWith("item doesn't exist");
+
+            // Fails when not enough ether is paid wwith the transaction
+            await expect(
+                marketplace.connect(addr2).purchaseItem(1, { value: toWei(price) })
+            ).to.be.revertedWith("not enough ether to cover item price and market fee");
+
+            // addr2 purchases item 1
+            await marketplace.connect(addr2).purchaseItem(1, { value: totalPriceInWei });
+
+            // deployer tries purchasing item 1 after its been sold
+            await expect(
+                marketplace.connect(deployer).purchaseItem(1, { value: totalPriceInWei })
+            ).to.be.revertedWith("item already sold");
         });
     });
 });
