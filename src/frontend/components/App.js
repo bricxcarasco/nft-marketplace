@@ -2,11 +2,22 @@
 import logo from './logo.png';
 import './App.css';
 
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useState } from 'react';
 import { ethers } from 'ethers';
+
+import Navigation from './Navbar';
+
+import MarketplaceAddress from '../contractsData/Marketplace-address.json';
+import MarketplaceAbi from '../contractsData/Marketplace.json';
+import NFTAddress from '../contractsData/NFT-address.json';
+import NFTAbi from '../contractsData/NFT.json';
  
 function App() {
+  const [loading, setLoading] = useState(true);
   const [account, setAccount] = useState(null);
+  const [marketplace, setMarketplace] = useState(null);
+  const [NFT, setNFT] = useState(null);
 
   // MetaMask Login/Connect
   const web3Handler = async () => {
@@ -19,20 +30,24 @@ function App() {
 
     // Set signer
     const signer = provider.getSigner();
+
+    loadContracts(signer);
   };
+
+  const loadContracts = async (signer) => {
+    // Get deployed copies of contracts
+    const marketplace = new ethers.Contract(MarketplaceAddress.address, MarketplaceAbi.abi, signer);
+    setMarketplace(marketplace);
+
+    const nft = new ethers.Contract(NFTAddress.address, NFTAbi.abi, signer);
+    setNFT(nft);
+
+    setLoading(false);
+  }
 
   return (
     <div>
-      <nav className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-        <a
-          className="navbar-brand col-sm-3 col-md-2 ms-3"
-          href="http://www.dappuniversity.com/bootcamp"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Dapp University
-        </a>
-      </nav>
+      <Navigation web3Handler={web3Handler} account={account} />
       <div className="container-fluid mt-5">
         <div className="row">
           <main role="main" className="col-lg-12 d-flex text-center">
