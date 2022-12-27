@@ -1,8 +1,26 @@
 
 import logo from './logo.png';
 import './App.css';
+
+import { useState } from 'react';
+import { ethers } from 'ethers';
  
 function App() {
+  const [account, setAccount] = useState(null);
+
+  // MetaMask Login/Connect
+  const web3Handler = async () => {
+    // Get MetaMask ethereum accounts
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    setAccount(accounts[0]);
+
+    // Get provider from MetaMask
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    // Set signer
+    const signer = provider.getSigner();
+  };
+
   return (
     <div>
       <nav className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
