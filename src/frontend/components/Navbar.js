@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Navbar, Nav, Button, Container } from 'react-bootstrap';
-import logo from '../logo.png';
+import logo from './logo.png';
 
 const Navigation = ({ web3Handler, account }) => {
     return (
