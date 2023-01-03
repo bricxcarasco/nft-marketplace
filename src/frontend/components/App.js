@@ -1,5 +1,4 @@
 
-import logo from './logo.png';
 import './App.css';
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -9,20 +8,20 @@ import { ethers } from 'ethers';
 
 import Navigation from './Navbar';
 import Home from './Home';
-import Create from './Create';
-import MyListedItem from './MyListedItem';
-import MyPurchases from './MyPurchases';
+// import Create from './Create';
+// import MyListedItem from './MyListedItem';
+// import MyPurchases from './MyPurchases';
 
 import MarketplaceAddress from '../contractsData/Marketplace-address.json';
 import MarketplaceAbi from '../contractsData/Marketplace.json';
 import NFTAddress from '../contractsData/NFT-address.json';
 import NFTAbi from '../contractsData/NFT.json';
- 
+
 function App() {
   const [loading, setLoading] = useState(true);
   const [account, setAccount] = useState(null);
   const [marketplace, setMarketplace] = useState(null);
-  const [NFT, setNFT] = useState(null);
+  const [nft, setNft] = useState(null);
 
   // MetaMask Login/Connect
   const web3Handler = async () => {
@@ -45,7 +44,7 @@ function App() {
     setMarketplace(marketplace);
 
     const nft = new ethers.Contract(NFTAddress.address, NFTAbi.abi, signer);
-    setNFT(nft);
+    setNft(nft);
 
     setLoading(false);
   }
@@ -63,7 +62,7 @@ function App() {
           ) : (
             <Routes>
               <Route path='/' element={
-                <Home />
+                <Home marketplace={marketplace} nft={nft} />
               } />
               <Route path='/create' />
               <Route path='/my-listed-items' />
