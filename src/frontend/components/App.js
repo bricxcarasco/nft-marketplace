@@ -8,7 +8,7 @@ import { ethers } from 'ethers';
 
 import Navigation from './Navbar';
 import Home from './Home';
-// import Create from './Create';
+import Create from './Create';
 // import MyListedItem from './MyListedItem';
 // import MyPurchases from './MyPurchases';
 
@@ -51,7 +51,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div>
+      <div className='App'>
         <Navigation web3Handler={web3Handler} account={account} />
         {
           loading ? (
@@ -64,7 +64,9 @@ function App() {
               <Route path='/' element={
                 <Home marketplace={marketplace} nft={nft} />
               } />
-              <Route path='/create' />
+              <Route path='/create' element={
+                <Create marketplace={marketplace} nft={nft} />
+              } />
               <Route path='/my-listed-items' />
               <Route path='/my-purchases' />
             </Routes>
